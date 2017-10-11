@@ -2,13 +2,12 @@ class tree implements Comparable<tree> {
   float[] angles = { -0, -PI/5, -3*PI/10, -2*PI/5, PI/2, 2*PI/5, 3*PI/10, PI/5, 0 };
   float stemLen, leafScore; 
   int fitness, leafTotal = 0, leafIndex = 0, branchCount = 0;
-  
+  leaf[] leaves;
   String dna = "";
   int compareTo(tree compareTrees){
     int compareFitness = ((tree) compareTrees).fitness;
     return compareFitness - this.fitness;
   }
-  //leaf[] leaves;
 
   tree(){
     for (int i = 0; i < 50; i++){
@@ -23,16 +22,19 @@ class tree implements Comparable<tree> {
         dna = dna + "e";
       }
     }
-    /*for (int i = 0; i < dna.length(); i++){
-      if (dna.charAt(i) == 'l'){
-        leafTotal++;
-      }
-    }
-    println(leafTotal, dna.length());
-    leaves = new leaf[leafTotal];*/
   }
   
   void drawTree(){
+    leafTotal = 0;
+    for (int i = 0; i < dna.length(); i++){
+      if (dna.charAt(i) == 'l'){
+        leafTotal++; 
+      }
+    }
+    leaves = new leaf[leafTotal];
+    for (int i = 0; i < leaves.length; i++){
+      leaves[i] = new leaf();
+    }
     float[] xyPos = {0, 0};
     int[] pushCount = {0};
     int stemCount = 0;
@@ -45,7 +47,7 @@ class tree implements Comparable<tree> {
       value = int(dna.charAt(i)-48); //48 is removed from the char in the for loop below as decimals 1-9 are 49-57 after char-int conversion, likewise: b = 98, e = 101, l = 108
       if (value < 10){
         if (len == 0){
-          len = 5*value;
+          len = size*value;
         } else if (len > 0){
           angle = value;
           //drawLine(len, angle, stemCount);
@@ -77,32 +79,46 @@ class tree implements Comparable<tree> {
           }
         } catch (ArrayIndexOutOfBoundsException exception) {}
       } else if (value == 60){
-        ellipse(xyPos[stemCount], xyPos[stemCount+1], 10, 10);
+        leaves[leafIndex].leafX = xyPos[stemCount];
+        leaves[leafIndex].leafY = xyPos[stemCount+1];
         leafIndex++;
       }
     }
+    sunshine();
+    drawLeaves();
     fitnessCalc(stemCount, leafIndex, branchCount);
-    //println(leafIndex, leafTotal);
-    
   }
   
-  void drawLine(float len, int angle, int stemCount){
-    /*int rotateBy = angle-1;
-    if (rotateBy < 0){
-     rotateBy = 5;
+  void drawLeaves(){
+    for (int i = 0; i < leaves.length; i++){
+       leaves[i].drawLeaf(); 
     }
-    if (angles[rotateBy] >= 0){
-      xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*len);
-      xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*-len); 
-    } else {
-      xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*-len);
-      xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*len);
-    }
-    line(xyPos[stemCount], xyPos[stemCount+1], xyPos[stemCount+2], xyPos[stemCount+3]);*/
-  } 
+  }
   
-  void fitnessCalc(float stems, float leaves, float branches){
-    int sGreaterThanBandI = 1;
+  void sunshine(){
+    for (int g = 0; g < leaves.length; g++){
+      for (int i = 0; i < leaves.length; i++){
+        if (dist(leaves[g].leafX, leaves[g].leafY, leaves[i].leafX, leaves[i].leafY) <= size*2 && i != g){
+          leaves[g].isWilted = true;
+        }
+      }
+    }
+    
+    /*resetMatrix();
+    for (float i = 0; i < width; i+=2){
+      for (float f = 0; f < height; i+=2){
+        for (int g = 0; g < leaves.length; g++){
+          if (dist(i, f, leaves[g].leafX, leaves[g].leafY) <= size*2){
+           f = height;
+           leaves[g].leafScore++;
+          }
+        }
+      }
+    }*/
+  }
+  
+  void fitnessCalc(float stems, float leaf, float branches){
+    /*int sGreaterThanBandI = 1;
     if (stems >= leaves) {
       sGreaterThanBandI = 2;
     }
@@ -112,13 +128,16 @@ class tree implements Comparable<tree> {
       fitness = -100;
     } else {
       fitness = int((leaves*sGreaterThanBandI)-(dna.length()/10));
-    } 
+    } */
+    for (int i = 0; i < leaves.length; i++){
+      fitness = fitness + int(leaves[i].leafScore);
+    }
     //fitness = int((stemLen + leafTotal)*100/dna.length());
   }
   
   void cull(String newDna){
     dna = newDna;
-    float chance = 1; //creates completely random trees [[[remove on prod]]]
+    float chance = random(1.05); //creates completely random trees [[[remove on prod]]]
     if (chance > 1){
       dna = "";
       for (int i = 0; i < 50; i++){

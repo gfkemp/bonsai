@@ -5,15 +5,17 @@ ArrayList<tree> treeRank = new ArrayList<tree>();
 int cullSize = 1;
 int cullGen = 0;
 int nextCull = cullGen;
-int mutationChance = 10; // (1/mutationChance)
+int mutationChance = 4; // (1/mutationChance)
+int size = 1;
 boolean isPaused = false;
 int generation = 0;
-int r = 8;
+int r = 64;
 
 void setup(){
+  rectMode(CORNERS);
   frameRate(r);
-  size(1400, 800); 
-  trees = new tree[2];
+  size(1900, 1000); 
+  trees = new tree[6];
   genExport = new String[trees.length];
   for (int i=0; i<trees.length; i = i+1){
     trees[i] = new tree();
@@ -43,6 +45,11 @@ void drawGen(){
     pushMatrix();
     pushStyle();
     translate((i+1) * width/(trees.length+1), 5*height/6);
+    pushStyle();
+    noStroke();
+    fill(250);
+    rect(-100, -450, 100, 0); 
+    popStyle();
     textAlign(CENTER);
     if (treeRank.indexOf(trees[i]) == 0){
       fill(255);
@@ -112,6 +119,15 @@ void keyPressed(){
     } else if (key == '.' || key == '>'){
       if (r < 500){
         r = r*2;
+      }
+    }
+  if (key == '-' || key == '_'){
+    if (size > 1){
+      size = size/2;
+    }
+    } else if (key == '+' || key == '='){
+      if (size < 20){
+        size = size*2;
       }
     }
   if (key == 's' || key == 'S'){
