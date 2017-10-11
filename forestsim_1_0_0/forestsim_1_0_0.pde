@@ -2,7 +2,7 @@ import java.util.Collections;
 tree[] trees;
 String[] genExport;
 ArrayList<tree> treeRank = new ArrayList<tree>();
-int cullSize = 5;
+int cullSize = 1;
 int cullGen = 0;
 int nextCull = cullGen;
 int mutationChance = 10; // (1/mutationChance)
@@ -12,8 +12,8 @@ int r = 8;
 
 void setup(){
   frameRate(r);
-  size(1440, 800); 
-  trees = new tree[15];
+  size(1900, 1080); 
+  trees = new tree[2];
   genExport = new String[trees.length];
   for (int i=0; i<trees.length; i = i+1){
     trees[i] = new tree();

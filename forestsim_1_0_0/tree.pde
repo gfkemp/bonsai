@@ -27,7 +27,7 @@ class tree implements Comparable<tree> {
         leafTotal++;
       }
     }
-    println(dna, leafTotal, dna.length());
+    println(leafTotal, dna.length());
     leaves = new leaf[leafTotal];
   }
   
@@ -43,7 +43,7 @@ class tree implements Comparable<tree> {
       value = int(dna.charAt(i)-48); //48 is removed from the char in the for loop below as decimals 1-9 are 49-57 after char-int conversion, likewise: b = 98, e = 101, l = 108
       if (value < 10){
         if (len == 0){
-          len = 3*value;
+          len = value;
         } else if (len > 0){
           angle = value;
           drawLine(len, angle);
@@ -66,7 +66,7 @@ class tree implements Comparable<tree> {
         //leaves[leafIndex] = new leaf();
         //leaves[leafIndex].drawLeaf();
         if (branchCount >= leafIndex){
-          ellipse(0, 0, 3, 3);
+          ellipse(0, 0, 2, 2);
           leafIndex++;
         }
       }
@@ -76,7 +76,7 @@ class tree implements Comparable<tree> {
       popMatrix();
     }
     fitnessCalc(stemLen, leafIndex, branchCount);
-    println(leafIndex, leafTotal);
+    //println(leafIndex, leafTotal);
   }
   
   void drawLine(float len, int angle){
@@ -89,12 +89,17 @@ class tree implements Comparable<tree> {
   } 
   
   void fitnessCalc(float stems, float leaves, float branches){
-    float x = 200; //OG fitness
-    if (stems > 5){
-      x = stems/leaves;
+    int sGreaterThanBandI = 1;
+    if (stems >= branches + leaves) {
+      sGreaterThanBandI = 2;
     }
-    fitness = int((200/x)*100/dna.length());
-    
+    if (dna.length() <= 10){
+      fitness = -10;
+    } else if (dna.length() <= 2){
+      fitness = -100;
+    } else {
+      fitness = int((leaves*sGreaterThanBandI)-(dna.length()/10));
+    } 
     //fitness = int((stemLen + leafTotal)*100/dna.length());
   }
   
@@ -122,7 +127,7 @@ class tree implements Comparable<tree> {
         leafTotal++;
       }
     }
-    println(dna, leafTotal, dna.length());
+    //println(dna, leafTotal, dna.length());
     leaves = new leaf[leafTotal];
   }
   
@@ -156,7 +161,7 @@ class tree implements Comparable<tree> {
           coinFlip = random(3.2);
           if (coinFlip <= 1){ //deletion
             dnaComponents[int(random(compNum))] = "";
-            println("deletion");
+            //println("deletion");
           } else if(coinFlip > 1 && coinFlip <= 2){ //addition
             int start = int(random(compNum));
             float seed = random(20);
@@ -170,10 +175,10 @@ class tree implements Comparable<tree> {
               dnaComponents = splice(dnaComponents, "e", start);
             }
             compNum++;
-            println("addition");
+            //println("addition");
           } else if(coinFlip > 2 && coinFlip <= 3){ //translation
             dnaComponents[int(random(compNum))] = nf(int(random(0, 99)), 2);
-            println("translation");
+            //println("translation");
           } else if(coinFlip > 3 && coinFlip <= 3.1){ //chunk replication
             int start = int(random(compNum));
             int end = int(random(start, compNum));
@@ -181,14 +186,14 @@ class tree implements Comparable<tree> {
             arrayCopy(dnaComponents, start, repArray, 0, end - start);
             dnaComponents = splice(dnaComponents, repArray, start);
             compNum = compNum + (end-start);
-            println("chunk replication " + (end-start));
+            //println("chunk replication " + (end-start));
           } else if(coinFlip > 3.1 && coinFlip <= 3.2){ //chunk deletion
             int start = int(random(compNum));
             int end = int(random(start, compNum));
             for (int i = start; i < end; i++){
               dnaComponents[i] = "";
             }
-            println("chunk deletion");
+            //println("chunk deletion");
           }
         }
         dna = "";
