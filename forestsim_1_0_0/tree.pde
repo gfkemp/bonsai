@@ -25,6 +25,8 @@ class tree implements Comparable<tree> {
   }
   
   void drawTree(){
+    float stroke = 5;
+    strokeWeight(stroke);
     leafTotal = 0;
     for (int i = 0; i < dna.length(); i++){
       if (dna.charAt(i) == 'l'){
@@ -64,6 +66,10 @@ class tree implements Comparable<tree> {
           }
           line(xyPos[stemCount], xyPos[stemCount+1], xyPos[stemCount+2], xyPos[stemCount+3]);
           stemCount+=2;
+          if (stroke > 1) {
+            stroke = stroke - 0.1;
+          }
+          strokeWeight(stroke);
           angle = 0;
           len = 0;
         }
