@@ -12,7 +12,7 @@ int r = 8;
 
 void setup(){
   frameRate(r);
-  size(1900, 1080); 
+  size(1400, 800); 
   trees = new tree[2];
   genExport = new String[trees.length];
   for (int i=0; i<trees.length; i = i+1){

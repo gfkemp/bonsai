@@ -1,13 +1,14 @@
 class tree implements Comparable<tree> {
-  float[] angles = { -PI/2, -3*PI/10, -PI/5, -PI/10, 0, PI/10, PI/5, 3*PI/10, PI/2 };
+  float[] angles = { -0, -PI/5, -3*PI/10, -2*PI/5, PI/2, 2*PI/5, 3*PI/10, PI/5, 0 };
   float stemLen, leafScore; 
   int fitness, leafTotal = 0, leafIndex = 0, branchCount = 0;
+  
   String dna = "";
   int compareTo(tree compareTrees){
     int compareFitness = ((tree) compareTrees).fitness;
     return compareFitness - this.fitness;
   }
-  leaf[] leaves;
+  //leaf[] leaves;
 
   tree(){
     for (int i = 0; i < 50; i++){
@@ -22,75 +23,87 @@ class tree implements Comparable<tree> {
         dna = dna + "e";
       }
     }
-    for (int i = 0; i < dna.length(); i++){
+    /*for (int i = 0; i < dna.length(); i++){
       if (dna.charAt(i) == 'l'){
         leafTotal++;
       }
     }
     println(leafTotal, dna.length());
-    leaves = new leaf[leafTotal];
+    leaves = new leaf[leafTotal];*/
   }
   
   void drawTree(){
+    float[] xyPos = {0, 0};
+    int[] pushCount = {0};
+    int stemCount = 0;
     stemLen = 0;
     leafIndex = 0;
     fitness = 0;
     branchCount = 0;
-    float pushPop = 0;
-    float pos = 0;
     int value = 0, len = 0, angle = 0;
     for (int i = 0; i < dna.length(); i++){
       value = int(dna.charAt(i)-48); //48 is removed from the char in the for loop below as decimals 1-9 are 49-57 after char-int conversion, likewise: b = 98, e = 101, l = 108
       if (value < 10){
         if (len == 0){
-          len = value;
+          len = 5*value;
         } else if (len > 0){
           angle = value;
-          drawLine(len, angle);
-          
+          //drawLine(len, angle, stemCount);
+          int rotateBy = angle-1;
+          if (rotateBy < 0){
+             rotateBy = 5;
+          }
+          if (angles[rotateBy] >= 0){
+            xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*len);
+            xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*-len); 
+          } else {
+            xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*-len);
+            xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*len);
+          }
+          line(xyPos[stemCount], xyPos[stemCount+1], xyPos[stemCount+2], xyPos[stemCount+3]);
+          stemCount+=2;
           angle = 0;
           len = 0;
         }
       } else if (value == 50){ //if char = b push transformation to create branch
-        if (pushPop < 31){
-          pushMatrix();
-          pushPop++;
-          branchCount++;
-        }
+        pushCount = append(pushCount, stemCount);
       } else if (value == 53){ //if char = e pop transformation to end branch
-        if (pushPop > 0){
-          popMatrix();
-          pushPop--;
-        }
+        try{
+        if (pushCount[1] >= 0){
+          xyPos = append(xyPos, xyPos[pushCount[pushCount.length-1]]);
+          xyPos = append(xyPos, xyPos[pushCount[pushCount.length-1]+1]);
+          stemCount+=2;
+          pushCount = shorten(pushCount);
+          }
+        } catch (ArrayIndexOutOfBoundsException exception) {}
       } else if (value == 60){
-        //leaves[leafIndex] = new leaf();
-        //leaves[leafIndex].drawLeaf();
-        if (branchCount >= leafIndex){
-          ellipse(0, 0, 2, 2);
-          leafIndex++;
-        }
+        ellipse(xyPos[stemCount], xyPos[stemCount+1], 10, 10);
+        leafIndex++;
       }
-      pos = pos + 10;
     }
-    for (int i = 0; i < pushPop; i++){ //pops pushMatrices that havent yet been popped
-      popMatrix();
-    }
-    fitnessCalc(stemLen, leafIndex, branchCount);
+    fitnessCalc(stemCount, leafIndex, branchCount);
     //println(leafIndex, leafTotal);
+    
   }
   
-  void drawLine(float len, int angle){
-    if (angle > 0){
-      rotate(angles[angle-1]);
+  void drawLine(float len, int angle, int stemCount){
+    /*int rotateBy = angle-1;
+    if (rotateBy < 0){
+     rotateBy = 5;
     }
-    line(0, 0, 0, -len);
-    translate(0, -len);
-    stemLen++;
+    if (angles[rotateBy] >= 0){
+      xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*len);
+      xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*-len); 
+    } else {
+      xyPos = append(xyPos, xyPos[stemCount]+cos(angles[rotateBy])*-len);
+      xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*len);
+    }
+    line(xyPos[stemCount], xyPos[stemCount+1], xyPos[stemCount+2], xyPos[stemCount+3]);*/
   } 
   
   void fitnessCalc(float stems, float leaves, float branches){
     int sGreaterThanBandI = 1;
-    if (stems >= branches + leaves) {
+    if (stems >= leaves) {
       sGreaterThanBandI = 2;
     }
     if (dna.length() <= 10){
@@ -128,7 +141,7 @@ class tree implements Comparable<tree> {
       }
     }
     //println(dna, leafTotal, dna.length());
-    leaves = new leaf[leafTotal];
+    //leaves = new leaf[leafTotal];
   }
   
   void mutate(){
