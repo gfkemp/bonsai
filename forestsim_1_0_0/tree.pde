@@ -10,7 +10,7 @@ class tree implements Comparable<tree> {
   }
 
   tree(){
-    for (int i = 0; i < 50; i++){
+    for (int i = 0; i < random(50, 100); i++){
       float seed = random(20);
       if (seed <= 8) {
         dna = dna + nf(int(random(0, 99)), 2);
@@ -49,7 +49,7 @@ class tree implements Comparable<tree> {
       value = int(dna.charAt(i)-48); //48 is removed from the char in the for loop below as decimals 1-9 are 49-57 after char-int conversion, likewise: b = 98, e = 101, l = 108
       if (value < 10){
         if (len == 0){
-          len = size*value;
+          len = int(size*value);
         } else if (len > 0){
           angle = value;
           //drawLine(len, angle, stemCount);
@@ -65,12 +65,12 @@ class tree implements Comparable<tree> {
             xyPos = append(xyPos, xyPos[stemCount+1]+sin(angles[rotateBy])*len);
           }
           stroke(100, 45, 10);
+          strokeWeight(stroke*size/10);
           line(xyPos[stemCount], xyPos[stemCount+1], xyPos[stemCount+2], xyPos[stemCount+3]);
           stemCount+=2;
           if (stroke > 1) {
             stroke = stroke - 0.1;
           }
-          strokeWeight(stroke);
           angle = 0;
           len = 0;
         }
@@ -140,7 +140,7 @@ class tree implements Comparable<tree> {
     for (int i = 0; i < leaves.length; i++){
       fitness = fitness + int(leaves[i].leafScore);
     }
-    fitness = fitness-int(0.5*stems+1/branches+1);
+    fitness = fitness-int(0.1*stems+1/branches+1);
     //fitness = int((stemLen + leafTotal)*100/dna.length());
   }
   
@@ -225,7 +225,7 @@ class tree implements Comparable<tree> {
             int end = int(random(start, compNum));
             String[] repArray = new String[end - start];
             arrayCopy(dnaComponents, start, repArray, 0, end - start);
-            dnaComponents = splice(dnaComponents, repArray, start);
+            dnaComponents = splice(dnaComponents, repArray, int(random(compNum)));
             compNum = compNum + (end-start);
             //println("chunk replication " + (end-start));
           } else if(coinFlip > 3.1 && coinFlip <= 3.2){ //chunk deletion

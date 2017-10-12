@@ -5,18 +5,19 @@ ArrayList<tree> treeRank = new ArrayList<tree>();
 int cullSize = 1;
 int cullGen = 0;
 int nextCull = cullGen;
-int mutationChance = 4; // (1/mutationChance)
-int size = 1;
+int mutationChance = 10; // (1/mutationChance)
+float size = 3;
 boolean isPaused = false;
 int generation = 0;
 int r = 64;
 
 void setup(){
+  textSize(14);
   strokeJoin(BEVEL);
   rectMode(CORNERS);
   frameRate(r);
   size(1400, 800); 
-  trees = new tree[5];
+  trees = new tree[3];
   genExport = new String[trees.length];
   for (int i=0; i<trees.length; i = i+1){
     trees[i] = new tree();
@@ -29,15 +30,22 @@ void draw(){
   int totalGen = generation + frameCount;
   background(200);
   line(0, 5*height/6, width, 5*height/6);
+  pushStyle();
+  noStroke();
+  fill(200, 233, 245);
+  rect(0, 5*height/6, width, 0);
+  popStyle();
+  toolBar();
   fill(0);
   textAlign(LEFT);
-  text("Generations: " + totalGen + ", until cull: " + nextCull, 3, 20);
-  text("FPS: " + int(frameRate) + "/" + r, 3, 35);
+  text("Generations: " + totalGen + ", size: " + nf(size, 0, 2), 10, height-10);
+  text("FPS: " + nf(frameRate, 0, 1) + "/" + r, 3, 20);
   
   drawGen();
   treeRank();
   treeCull();
   checkPaused();
+  noFill();
 }
 
 void drawGen(){
@@ -55,11 +63,12 @@ void drawGen(){
     popStyle();
     textAlign(CENTER);
     if (treeRank.indexOf(trees[i]) == 0){
-      fill(255);
+      textSize(20);
     } else {
-      fill(0);
+      textSize(14);
     }
     text(trees[i].fitness + ":" + treeRank.indexOf(trees[i]), 0, -600);
+    text(trees[i].dna.length(), 0, -550);
     trees[i].drawTree(); 
     popMatrix();
     popStyle();
@@ -90,15 +99,10 @@ void checkPaused(){
     fill(255);
     pushMatrix();
     translate(width/2, height/2);
-    rect(0-75, 0-100, 150, 200);
+    rect(-50, -20, 50, 20);
     fill(0);
-    translate(0, -50);
     textAlign(CENTER, CENTER);
-    text("Pause menu", 0, -10);
-    text("(S)AVE", 0, 10);
-    text("(L)OAD", 0, 25);
-    text(" FPS+ (>)", 0, 40);
-    text(" FPS- (<)", 0, 55);
+    text("Paused", 0, 0);
     popMatrix();
     noLoop();
   } else {
@@ -108,51 +112,182 @@ void checkPaused(){
 
 void keyPressed(){
   if (key == ' '){
-    if (isPaused == true){
-      isPaused = false;
-      loop();
-    } else {
-      isPaused = true;
-    }
+    pause();
   }
   if (key == ',' || key == '<'){
-    if (r > 1){
-      r = r/2;
-    }
-    } else if (key == '.' || key == '>'){
-      if (r < 500){
-        r = r*2;
-      }
-    }
+    fpsDown();
+  } else if (key == '.' || key == '>'){
+    fpsUp();
+  }
   if (key == '-' || key == '_'){
-    if (size > 1){
-      size = size/2;
-    }
-    } else if (key == '+' || key == '='){
-      if (size < 20){
-        size = size*2;
-      }
-    }
+    sizeDown();
+  } else if (key == '+' || key == '='){
+    sizeUp();
+  }
   if (key == 's' || key == 'S'){
-    for (int i = 0; i < trees.length; i++){
-      genExport[i] = trees[i].dna;
-    }
-    genExport = append(genExport, str(frameCount));
-    saveStrings("currentGen.txt", genExport);
-    println("SAVED");
+    savetxt();
   }
   if (key == 'l' || key == 'L'){
-    String[] genImport = loadStrings("currentGen.txt");
-    generation = int(genImport[genImport.length-1]);
-    genImport = shorten(genImport);
-    trees = new tree[genImport.length];
-    treeRank.clear();
-    genExport = new String[trees.length];
-    for (int i=0; i<trees.length; i = i+1){
-      trees[i] = new tree();
-      trees[i].dna = genImport[i];
-      treeRank.add(trees[i]);
+    load();
+  }
+}
+
+void pause(){
+  if (isPaused == true){
+    isPaused = false;
+    loop();
+  } else {
+    isPaused = true;
+  }
+}
+
+void fpsDown(){
+  if (r > 1){
+    r = r/2;
+  }
+}
+
+void fpsUp(){
+  if (r < 500){
+    r = r*2;
+  }
+}
+
+void sizeDown(){
+  if (size > 1){
+    size = size/1.5;
+  }
+}
+
+void sizeUp(){
+  if (size < 20){
+     size = size + 0.5;
+  }
+}
+
+void savetxt(){
+  for (int i = 0; i < trees.length; i++){
+      genExport[i] = trees[i].dna;
     }
-    println("LOADED");
+  genExport = append(genExport, str(size));
+  genExport = append(genExport, str(frameCount));
+  saveStrings("currentGen.txt", genExport);
+  println("SAVED");
+}
+
+void load(){
+  String[] genImport = loadStrings("currentGen.txt");
+  generation = int(genImport[genImport.length-1]);
+  genImport = shorten(genImport);
+  
+  size = int(genImport[genImport.length-1]);
+  genImport = shorten(genImport);
+  
+  trees = new tree[genImport.length];
+  treeRank.clear();
+  genExport = new String[trees.length];
+  for (int i=0; i<trees.length; i = i+1){
+    trees[i] = new tree();
+    trees[i].dna = genImport[i];
+    treeRank.add(trees[i]);
+  }
+  println("LOADED");
+}
+
+void newFile(){
+  trees = new tree[3];
+  genExport = new String[trees.length];
+  for (int i=0; i<trees.length; i = i+1){
+    trees[i] = new tree();
+    treeRank.add(trees[i]);
+  }
+}
+
+void toolBar(){
+  float x1 = width/18;
+  line(0, 8*height/9, width/3, 8*height/9);
+  line(0, 17*height/18, width/3, 17*height/18);
+  
+  line(2*x1, 5*height/6, 2*x1, 17*height/18);
+  line(4*x1, 5*height/6, 4*x1, 17*height/18);
+  line(5*width/18, 5*height/6, 5*width/18, 17*height/18);
+  line(width/3, 5*height/6, width/3, 17*height/18);
+  
+  textAlign(CENTER, CENTER);
+  if (mouseX <= 2*x1 && mouseX >= 0 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("PAUSE", width/18, 31*height/36);
+  if (mouseX <= 2*x1 && mouseX >= 0 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("NEW", width/18, 33*height/36);
+  if (mouseX <= 4*x1 && mouseX >= 2*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("SAVE", 3*width/18, 31*height/36);
+  if (mouseX <= 4*x1 && mouseX >= 2*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("LOAD SAMPLE", 3*width/18, 33*height/36);
+  if (mouseX <= 5*x1 && mouseX >= 4*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("FPS+", 4.5*width/18, 31*height/36);
+  if (mouseX <= 5*x1 && mouseX >= 4*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("SIZE+", 4.5*width/18, 33*height/36);
+  if (mouseX <= 6*x1 && mouseX >= 5*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("FPS-", 5.5*width/18, 31*height/36);
+  if (mouseX <= 6*x1 && mouseX >= 5*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    fill(255);
+  } else {
+    fill(0);
+  }
+  text("SIZE-", 5.5*width/18, 33*height/36);
+}
+
+void mousePressed(){
+  float x1 = width/18;
+  if (mouseX <= 2*x1 && mouseX >= 0 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    pause();
+  }
+  if (mouseX <= 2*x1 && mouseX >= 0 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    newFile();
+  } 
+  if (mouseX <= 4*x1 && mouseX >= 2*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    savetxt();
+  }
+  if (mouseX <= 4*x1 && mouseX >= 2*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    load();
+  }
+  if (mouseX <= 5*x1 && mouseX >= 4*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fpsUp();
+  }
+  if (mouseX <= 5*x1 && mouseX >= 4*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    sizeUp();
+  }
+  if (mouseX <= 6*x1 && mouseX >= 5*x1 && mouseY <= 8*height/9 && mouseY >= 5*height/6){
+    fpsDown();
+  }
+  if (mouseX <= 6*x1 && mouseX >= 5*x1 && mouseY <= 17*height/18 && mouseY >= 8*height/9){
+    sizeDown();
   }
 }
