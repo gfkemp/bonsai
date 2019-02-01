@@ -1,2 +1,2 @@
-# bonsai
+# DNA bonsai simulation
 
